@@ -1,10 +1,15 @@
 # ptt-analysis
 
+Client web
 ```
-cd web
-cd cli
+cd web/cli
 yarn install
 yarn build
-cd ../srv
+```
+
+Api side
+```
+cd web/srv
+yarn install
 node app.js
 ```
