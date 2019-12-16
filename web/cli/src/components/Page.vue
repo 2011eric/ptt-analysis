@@ -1,25 +1,39 @@
 <template>
 <v-container>
-
   <div class="d-flex justify-center mb-6 flex-column text-center">
-    <v-text-field v-model="search" append-icon="mdi-magnify" @click:append="searchPost()"></v-text-field>
-    <v-card class="d-flex flex-column pa-3 my-5" width="350px">
-      <p class="text-left">過濾條件</p>
-      <v-menu v-model="smenu" :close-on-content-click="false" :nudge-right="40" transition="scale-transition" offset-y min-width="290px">
-        <template v-slot:activator="{ on }">
-          <v-text-field v-model="sdate" label="開始日期" prepend-icon="mdi-calendar-clock" readonly v-on="on"></v-text-field>
-        </template>
-        <v-date-picker v-model="sdate" @input="smenu = false"></v-date-picker>
-      </v-menu>
-      <v-menu v-model="emenu" :close-on-content-click="false" :nudge-right="40" transition="scale-transition" offset-y min-width="290px">
-        <template v-slot:activator="{ on }">
-          <v-text-field v-model="edate" label="結束日期" prepend-icon="mdi-calendar-clock" readonly v-on="on"></v-text-field>
-        </template>
-        <v-date-picker v-model="edate" @input="emenu = false"></v-date-picker>
-      </v-menu>
-      <v-btn @click="cleanFilter" width="80px">清除條件</v-btn>
+    <v-card class="pa-5 my-5 text-left">
+      <p class="title">過濾條件</p>
+      <v-text-field v-model="search"></v-text-field>
+
+      <div class="d-inline-flex flex-column ma-3">
+        <p class="text-left">日期</p>
+        <v-menu v-model="smenu" :close-on-content-click="false" :nudge-right="80" transition="scale-transition" offset-y>
+          <template v-slot:activator="{ on }">
+            <v-text-field v-model="sdate" label="開始日期" prepend-icon="mdi-calendar-clock" readonly v-on="on"></v-text-field>
+          </template>
+          <v-date-picker v-model="sdate" @input="smenu = false"></v-date-picker>
+        </v-menu>
+        <v-menu v-model="emenu" :close-on-content-click="false" :nudge-right="80" transition="scale-transition" offset-y>
+          <template v-slot:activator="{ on }">
+            <v-text-field v-model="edate" label="結束日期" prepend-icon="mdi-calendar-clock" readonly v-on="on"></v-text-field>
+          </template>
+          <v-date-picker v-model="edate" @input="emenu = false"></v-date-picker>
+        </v-menu>
+      </div>
+      <div class="d-inline-flex flex-column ma-3">
+        <p>資料數: {{total.length}}</p>
+      </div>
+      <br>
+      <v-divider></v-divider>
+      <br>
+      <div class="d-flex flex-row">
+        <v-spacer></v-spacer>
+        <v-btn @click="cleanFilter" width="80px" class="mx-5">清除條件</v-btn>
+        <v-btn @click="searchPost" color="primary" width="80px">搜尋</v-btn>
+      </div>
     </v-card>
-    <div class="text-left indigo--text text--lighten-1">資料數: {{total.length}}<br><br></div>
+    <br>
+    <br>
     <div v-if="show.length==0">
       <br>
       <v-progress-circular :size="80" :width="3" class="ma-5 pa-5" color="primary" indeterminate></v-progress-circular>
@@ -40,7 +54,7 @@
         <div v-if="item.showComment">
           <div v-for="comment in item.comments" :key="comment.id">
             <v-card-subtitle class="py-0">{{ comment.user }} ({{ comment.ip }})</v-card-subtitle>
-            <v-card-text class="text--primary">{{ comment.text }}</v-card-text>
+            <v-card-text class="text--primary"><span class="blue-grey--text">{{ comment.tag }}</span>  {{ comment.text }}</v-card-text>
           </div>
         </div>
       </v-card>
@@ -67,7 +81,7 @@ export default {
     page: 1,
     total: [],
     max: 5,
-    api: "",
+    api: '',
     barlength: 1,
     sdate: null,
     edate: null,
@@ -81,13 +95,14 @@ export default {
   methods: {
     load: function() {
       let self = this
-      if (process.env.NODE_ENV=="development") {
-        self.api = "http://localhost:8081/api"
+      if (process.env.NODE_ENV == 'development') {
+        self.api = 'http://localhost:8081/api'
       } else {
-        self.api = "https://nehs.daan.nctu.me/api"
+        self.api = 'https://nehs.daan.nctu.me/api'
       }
       window.console.log(self.api)
-      axios.get(`${self.api}/get/count`)
+      axios
+        .get(`${self.api}/get/count`)
         .then(res => {
           self.total = res.data
         })
@@ -139,7 +154,7 @@ export default {
       let self = this
       let s = -1
       let e = -1
-      if (self.sdate != null && self.edate!=null) {
+      if (self.sdate != null && self.edate != null) {
         s = new Date(self.sdate).getTime()
         e = new Date(self.edate).getTime()
         window.console.log(s, e)
@@ -161,7 +176,7 @@ export default {
         self.render()
       })
     },
-    cleanFilter: function () {
+    cleanFilter: function() {
       this.sdate = null
       this.edate = null
     }
