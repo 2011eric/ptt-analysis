@@ -67,8 +67,7 @@ export default {
     page: 1,
     total: [],
     max: 5,
-    api: 'https://nehs.daan.nctu.me/api',
-    //api: 'http://localhost:8081/api',
+    api: "",
     barlength: 1,
     sdate: null,
     edate: null,
@@ -82,6 +81,12 @@ export default {
   methods: {
     load: function() {
       let self = this
+      if (process.env.NODE_ENV=="development") {
+        self.api = "http://localhost:8081/api"
+      } else {
+        self.api = "https://nehs.daan.nctu.me/api"
+      }
+      window.console.log(self.api)
       axios.get(`${self.api}/get/count`)
         .then(res => {
           self.total = res.data
@@ -141,9 +146,6 @@ export default {
         if (new Date(e).getTime() < new Date(s).getTime()) {
           return
         }
-      }
-      if (self.search == '') {
-        self.search = ' '
       }
       axios.get(`${self.api}/search/${self.search}/${s}/${e}`).then(res => {
         if (res.data.length == 0) {
