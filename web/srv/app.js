@@ -58,6 +58,6 @@ app.get('/api/get/count', function (req, res) {
 
 
 
-//port = process.env.PORT
-port = 8081
+port = process.env.PORT
+//port = 8081
 app.listen(port, () => console.log(`Listening on http://localhost:${port}/`))
