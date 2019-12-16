@@ -3,7 +3,7 @@ node_modules
 /data
 process.json
 .DS_Store
-/cli/dist
+/web/cli/dist
 
 # local env files
 .env.local

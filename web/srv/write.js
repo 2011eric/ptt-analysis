@@ -1,11 +1,10 @@
 const fs = require('fs')
-const file = "./data.db"
 const _ = require('lodash')
 const db = require('better-sqlite3')('data.db')
 
 let total = 0
 
-fs.readFile('../../data/Gossiping008.json', (err,data) => {
+fs.readFile('../../data/Gossiping015.json', (err,data) => {
   data = JSON.parse(data)
   insertPost(data)
   let all = []
