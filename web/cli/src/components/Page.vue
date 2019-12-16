@@ -24,11 +24,12 @@
       <br>
       <v-progress-circular :size="80" :width="3" class="ma-5 pa-5" color="primary" indeterminate></v-progress-circular>
     </div>
-    <div v-for="item in show" :key="item.id" v-show="item.show">
+    <div v-for="item in show" :key="item.id">
       <v-card class="mx-auto text-left" max-width="90%">
         <v-card-text>
           <div>{{ item.board }}</div>
           <p class="display-1 text--primary">{{ item.title }}</p>
+          <p>{{ new Date(item.timestamp) }}</p>
           <p>{{ item.author }}</p>
           <div class="text--primary" v-html="item.content"></div>
         </v-card-text>
@@ -66,7 +67,8 @@ export default {
     page: 1,
     total: [],
     max: 5,
-    api: 'https://nehs.daan.nctu.me/api',
+    //api: 'https://nehs.daan.nctu.me/api',
+    api: 'http://localhost:8081/api',
     barlength: 1,
     sdate: null,
     edate: null,
@@ -80,11 +82,9 @@ export default {
   methods: {
     load: function() {
       let self = this
-      axios
-        .get(`${self.api}/get/count`)
+      axios.get(`${self.api}/get/count`)
         .then(res => {
           self.total = res.data
-          window.console.log(self.total)
         })
         .then(() => {
           self.page = 1
@@ -117,12 +117,6 @@ export default {
         res.data.forEach(o => {
           o['comments'] = []
           o['showComment'] = false
-          o['show'] = true
-          if (self.sdate != null && self.edate!=null) {
-            if (o.timestamp > new Date(self.edate).getTime() || o.timestamp < new Date(self.sdate).getTime()) {
-              o.show = false
-            }
-          }
           o.content = o.content.replace(/\n/g, '<br>')
         })
         self.show = res.data
@@ -138,12 +132,20 @@ export default {
     },
     searchPost: function() {
       let self = this
-      if (self.search == '') {
-        self.load()
-        return
+      let s = -1
+      let e = -1
+      if (self.sdate != null && self.edate!=null) {
+        s = new Date(self.sdate).getTime()
+        e = new Date(self.edate).getTime()
+        window.console.log(s, e)
+        if (new Date(e).getTime() < new Date(s).getTime()) {
+          return
+        }
       }
-      window.console.log(self.sdate, self.edate)
-      axios.get(`${self.api}/search/${self.search}`).then(res => {
+      if (self.search == '') {
+        self.search = ' '
+      }
+      axios.get(`${self.api}/search/${self.search}/${s}/${e}`).then(res => {
         if (res.data.length == 0) {
           self.load()
           return

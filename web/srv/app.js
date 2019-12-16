@@ -29,12 +29,17 @@ app.get('/api/get/comments/:n', function (req, res) {
   })
 })
 
-app.get('/api/search/:text', function (req, res) {
+app.get('/api/search/:text/:s/:e', function (req, res) {
   let text = req.params.text
   let result = []
-  db.all(`SELECT article FROM comments WHERE text LIKE "%${text}%" group by article;`, (err, data) => {
+  let op = ""
+  let s = req.params.s
+  let e = req.params.e
+  if (e != -1 && s != -1) {
+    op = `AND timestamp < ${e} AND timestamp > ${s}`
+  }
+  db.all(`SELECT article FROM comments WHERE text LIKE "%${text}%" ${op} group by article;`, (err, data) => {
     _.forEach(data, (o) => {
-      console.log(o)
       result.push(o.article)
     })
     res.send(JSON.stringify(result))
@@ -53,6 +58,6 @@ app.get('/api/get/count', function (req, res) {
 
 
 
-port = process.env.PORT
-//port = 8081
+//port = process.env.PORT
+port = 8081
 app.listen(port, () => console.log(`Listening on http://localhost:${port}/`))
