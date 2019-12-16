@@ -35,11 +35,10 @@
     <br>
     <br>
     <div v-if="show.length==0">
-      <br>
       <v-progress-circular :size="80" :width="3" class="ma-5 pa-5" color="primary" indeterminate></v-progress-circular>
     </div>
     <div v-for="item in show" :key="item.id">
-      <v-card class="mx-auto text-left" max-width="90%">
+      <v-card class="mx-auto text-left">
         <v-card-text>
           <div>{{ item.board }}</div>
           <p class="display-1 text--primary">{{ item.title }}</p>
@@ -54,7 +53,7 @@
         <div v-if="item.showComment">
           <div v-for="comment in item.comments" :key="comment.id">
             <v-card-subtitle class="py-0">{{ comment.user }} ({{ comment.ip }})</v-card-subtitle>
-            <v-card-text class="text--primary"><span class="blue-grey--text">{{ comment.tag }}</span>  {{ comment.text }}</v-card-text>
+            <v-card-text class="text--primary"><span class="blue-grey--text">{{ comment.tag }}</span> {{ comment.text }}</v-card-text>
           </div>
         </div>
       </v-card>
