@@ -55,7 +55,7 @@
           <div v-if="item.showComment">
             <div v-for="comment in item.comments" :key="comment.id">
               <v-card-subtitle class="py-0">{{ comment.user }} ({{ comment.ip }})</v-card-subtitle>
-              <v-card-text class="text--primary"><span class="blue-grey--text">{{ comment.tag }}</span> <span v-html="comment.text"></span></v-card-text>
+              <v-card-text class="text--primary"><span :class="comment.color+'--text'">{{ comment.tag }}</span> <span v-html="comment.text"></span></v-card-text>
             </div>
           </div>
         </v-card>
@@ -123,6 +123,14 @@ export default {
           if (o.id == id) {
             o.comments = res.data
             o.showComment = !o.showComment
+            o.comments.forEach((c) => {
+              if (c.tag == "推") {
+                c['color'] = "text--darken-2 indigo"
+              } else if (c.tag == "噓") {
+                c['color'] = "text--darken-2 red"
+              }
+              c.text = c.text.replace(self.search, `<span class="light-green lighten-2">${self.search}</span>`)
+            })
           }
         })
       })
@@ -141,14 +149,9 @@ export default {
       axios.get(`${self.api}/get/post/${arr}`).then(res => {
         res.data.forEach(o => {
           o['comments'] = []
-          o['showComment'] = self.showComment
+          o['showComment'] = false
           if (self.showComment) {
-            axios.get(`${self.api}/get/comments/${o.id}`).then(res => {
-              o.comments = res.data
-              o.comments.forEach((c) => {
-                c.text = c.text.replace(self.search, `<span class="light-green lighten-2">${self.search}</span>`)
-              })
-            })
+            self.getcomments(o.id)
           }
           o.content = o.content.replace(/\n/g, '<br>')
         })
