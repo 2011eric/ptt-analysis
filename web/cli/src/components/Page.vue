@@ -3,12 +3,28 @@
 
   <div class="d-flex justify-center mb-6 flex-column text-center">
     <v-text-field v-model="search" append-icon="mdi-magnify" @click:append="searchPost()"></v-text-field>
+    <v-card class="d-flex flex-column pa-3 my-5" width="350px">
+      <p class="text-left">過濾條件</p>
+      <v-menu v-model="smenu" :close-on-content-click="false" :nudge-right="40" transition="scale-transition" offset-y min-width="290px">
+        <template v-slot:activator="{ on }">
+          <v-text-field v-model="sdate" label="開始日期" prepend-icon="mdi-calendar-clock" readonly v-on="on"></v-text-field>
+        </template>
+        <v-date-picker v-model="sdate" @input="smenu = false"></v-date-picker>
+      </v-menu>
+      <v-menu v-model="emenu" :close-on-content-click="false" :nudge-right="40" transition="scale-transition" offset-y min-width="290px">
+        <template v-slot:activator="{ on }">
+          <v-text-field v-model="edate" label="結束日期" prepend-icon="mdi-calendar-clock" readonly v-on="on"></v-text-field>
+        </template>
+        <v-date-picker v-model="edate" @input="emenu = false"></v-date-picker>
+      </v-menu>
+      <v-btn @click="cleanFilter" width="80px">清除條件</v-btn>
+    </v-card>
     <div class="text-left indigo--text text--lighten-1">資料數: {{total.length}}<br><br></div>
     <div v-if="show.length==0">
       <br>
       <v-progress-circular :size="80" :width="3" class="ma-5 pa-5" color="primary" indeterminate></v-progress-circular>
     </div>
-    <div v-for="item in show" :key="item.id">
+    <div v-for="item in show" :key="item.id" v-show="item.show">
       <v-card class="mx-auto text-left" max-width="90%">
         <v-card-text>
           <div>{{ item.board }}</div>
@@ -51,7 +67,12 @@ export default {
     total: [],
     max: 5,
     api: 'https://nehs.daan.nctu.me/api',
-    barlength: 1
+    barlength: 1,
+    sdate: null,
+    edate: null,
+    smenu: false,
+    emenu: false,
+    menu: false
   }),
   beforeMount: function() {
     this.load()
@@ -96,6 +117,12 @@ export default {
         res.data.forEach(o => {
           o['comments'] = []
           o['showComment'] = false
+          o['show'] = true
+          if (self.sdate != null && self.edate!=null) {
+            if (o.timestamp > new Date(self.edate).getTime() || o.timestamp < new Date(self.sdate).getTime()) {
+              o.show = false
+            }
+          }
           o.content = o.content.replace(/\n/g, '<br>')
         })
         self.show = res.data
@@ -115,6 +142,7 @@ export default {
         self.load()
         return
       }
+      window.console.log(self.sdate, self.edate)
       axios.get(`${self.api}/search/${self.search}`).then(res => {
         if (res.data.length == 0) {
           self.load()
@@ -128,6 +156,10 @@ export default {
         self.show = []
         self.render()
       })
+    },
+    cleanFilter: function () {
+      this.sdate = null
+      this.edate = null
     }
   }
 }
