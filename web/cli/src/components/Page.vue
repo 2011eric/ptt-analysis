@@ -33,6 +33,10 @@
           <v-btn @click="searchPost" color="primary" width="80px">搜尋</v-btn>
         </div>
       </v-card>
+      <v-card class="pa-5 my-5 text-left">
+        <p class="title">統計資料</p>
+        <ve-pie :data="chartData"></ve-pie>
+      </v-card>
     </v-col>
 
     <v-col xs="12" md="8" class="py-5">
@@ -91,10 +95,23 @@ export default {
     smenu: false,
     emenu: false,
     menu: false,
-    showComment: false
+    showComment: false,
+    chartData: {
+      columns: ['tag', 'count'],
+      rows: [{
+          'tag': '推',
+          'count': 0
+        },
+        {
+          'tag': '噓',
+          'count': 0
+        }
+      ]
+    }
   }),
   beforeMount: function() {
     this.load()
+    this.getCommentData()
   },
   methods: {
     load: function() {
@@ -115,6 +132,15 @@ export default {
           self.page = 1
           self.render()
         })
+    },
+    getCommentData: function () {
+      let self = this
+      axios.get(`${self.api}/get/count/tag/推`).then(ra => {
+        self.chartData.rows[0].count = ra.data
+        axios.get(`${self.api}/get/count/tag/噓`).then(rb => {
+          self.chartData.rows[1].count = rb.data
+        })
+      })
     },
     getcomments: function(id) {
       let self = this
@@ -142,6 +168,8 @@ export default {
       let self = this
       let startindex = (self.page - 1) * self.max
       let endindex = startindex + self.max - 1
+      self.chartData.rows[0].count = 0
+      self.chartData.rows[1].count = 0
       while (self.total[endindex] == undefined) {
         endindex--
       }

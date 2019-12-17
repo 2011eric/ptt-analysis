@@ -72,6 +72,13 @@ app.get('/api/get/count', function (req, res) {
   })
 })
 
+app.get('/api/get/count/tag/:text', function (req, res) {
+  db.all(`select count(tag) from comments where tag like "%${req.params.text}%";`, (err, data) => {
+    let result = JSON.stringify(data)
+    result = (result.split(":")[1]).split("}")[0]
+    res.send(result)
+  })
+})
 
 
 port = process.env.PORT
