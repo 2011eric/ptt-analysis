@@ -22,7 +22,6 @@
           </v-menu>
         </div>
         <div class="d-inline-flex flex-column ma-3">
-          <p>資料數: {{total.length}}</p>
         </div>
         <br>
         <v-divider></v-divider>
@@ -35,7 +34,8 @@
       </v-card>
       <v-card class="pa-5 my-5 text-left">
         <p class="title">統計資料</p>
-        <ve-pie :data="chartData"></ve-pie>
+        <p class="subtitle-1">資料數: {{total.length}}</p>
+        <ve-pie :data="chartData" :colors="chartData.color"></ve-pie>
       </v-card>
     </v-col>
 
@@ -97,6 +97,7 @@ export default {
     menu: false,
     showComment: false,
     chartData: {
+      color: ['#03A9F4','#F48FB1'],
       columns: ['tag', 'count'],
       rows: [{
           'tag': '推',
@@ -111,7 +112,6 @@ export default {
   }),
   beforeMount: function() {
     this.load()
-    this.getCommentData()
   },
   methods: {
     load: function() {
@@ -132,13 +132,13 @@ export default {
           self.page = 1
           self.render()
         })
+      this.getCommentData()
     },
     getCommentData: function () {
       let self = this
-      axios.get(`${self.api}/get/count/tag/推`).then(ra => {
-        self.chartData.rows[0].count = ra.data
-        axios.get(`${self.api}/get/count/tag/噓`).then(rb => {
-          self.chartData.rows[1].count = rb.data
+      self.chartData.rows.forEach((o) => {
+        axios.get(`${self.api}/get/count/tag/${o.tag}`).then(res => {
+          o.count = res.data
         })
       })
     },
@@ -206,7 +206,13 @@ export default {
           return
         }
       }
-      axios.get(`${self.api}/search/${self.search}/${s}/${e}`).then(res => {
+      let url = ""
+      if (self.search == '') {
+        url = `${self.api}/search/${s}/${e}`
+      } else {
+        url = `${self.api}/search/${self.search}/${s}/${e}`
+      }
+      axios.get(url).then(res => {
         if (res.data.length == 0) {
           self.load()
           return
