@@ -239,7 +239,9 @@ export default {
           })
         })
         self.searchLineData.rows = []
-        self.searchLineData.rows = _.sortBy(data, [(o) => new Date(o.order).getTime()])
+        self.searchLineData.rows = _.sortBy(data, [(o) => {
+          new Date("2019 " + o.date).getTime()
+        }])
         //_.reverse(self.searchLineData.rows)
         self.page = 1
         self.show = []
