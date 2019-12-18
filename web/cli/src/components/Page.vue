@@ -240,7 +240,12 @@ export default {
         })
         self.searchLineData.rows = []
         self.searchLineData.rows = _.sortBy(data, [(o) => {
-          new Date("2019 " + o.date).getTime()
+          let tmp = new Date("2019 " + o.date)
+          let month = (tmp.getMonth()+1)
+          let date = tmp.getDate()
+          if (month < 10) month = `0${month}`
+          if (date < 10) date = `0${date}`
+          return parseInt(`${month}${date}`)
         }])
         //_.reverse(self.searchLineData.rows)
         self.page = 1
