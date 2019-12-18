@@ -4,7 +4,7 @@ const db = require('better-sqlite3')('data.db')
 
 let total = 0
 
-fs.readFile('../../data/Gossiping015.json', (err,data) => {
+fs.readFile('../../data/Gossiping018.json', (err,data) => {
   data = JSON.parse(data)
   insertPost(data)
   let all = []
