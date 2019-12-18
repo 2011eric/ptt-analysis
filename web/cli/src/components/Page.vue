@@ -34,10 +34,13 @@
       </v-card>
       <v-card class="pa-5 my-5 text-left">
         <p class="title">統計資料</p>
-        <p class="subtitle-1">資料數: {{total.length}}</p>
+        <p class="subtitle-1">資料數： {{total.length}}</p>
         <ve-pie :data="upDownPieData" :colors="upDownPieData.colors"></ve-pie>
         <br>
-        <ve-line :data="searchLineData" v-if="searchLineData.rows.length!=0"></ve-line>
+        <div v-if="searchLineData.rows.length!=0">
+          <p class="subtitle-1">關鍵字： {{search}}</p>
+          <ve-line :data="searchLineData"></ve-line>
+        </div>
       </v-card>
     </v-col>
 
