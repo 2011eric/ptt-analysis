@@ -38,28 +38,8 @@ app.get('/api/search/:text/:s/:e', function (req, res) {
   if (e != -1 && s != -1) {
     op = `AND timestamp < ${e} AND timestamp > ${s}`
   }
-  db.all(`SELECT article FROM comments WHERE text LIKE "%${text}%" ${op} group by article;`, (err, data) => {
-    _.forEach(data, (o) => {
-      result.push(o.article)
-    })
-    res.send(JSON.stringify(result))
-  })
-})
-
-app.get('/api/search/:s/:e', function (req, res) {
-  let result = []
-  let op = ""
-  let s = req.params.s
-  let e = req.params.e
-  if (e != -1 && s != -1) {
-    op = `AND timestamp <= ${e} AND timestamp >= ${s}`
-  }
-  console.log(op)
-  db.all(`SELECT article FROM comments WHERE ${op} group by article;`, (err, data) => {
-    _.forEach(data, (o) => {
-      result.push(o.article)
-    })
-    res.send(JSON.stringify(result))
+  db.all(`SELECT article, timestamp FROM comments WHERE text LIKE "%${text}%" ${op} group by article;`, (err, data) => {
+    res.send(JSON.stringify(data))
   })
 })
 

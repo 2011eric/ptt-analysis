@@ -35,7 +35,9 @@
       <v-card class="pa-5 my-5 text-left">
         <p class="title">統計資料</p>
         <p class="subtitle-1">資料數: {{total.length}}</p>
-        <ve-pie :data="chartData" :colors="chartData.color"></ve-pie>
+        <ve-pie :data="upDownPieData" :colors="upDownPieData.colors"></ve-pie>
+        <br>
+        <ve-line :data="searchLineData"></ve-line>
       </v-card>
     </v-col>
 
@@ -96,8 +98,8 @@ export default {
     emenu: false,
     menu: false,
     showComment: false,
-    chartData: {
-      color: ['#03A9F4','#F48FB1'],
+    upDownPieData: {
+      colors: ['#C5E1A5','#F48FB1','#03A9F4'],
       columns: ['tag', 'count'],
       rows: [{
           'tag': '推',
@@ -106,8 +108,16 @@ export default {
         {
           'tag': '噓',
           'count': 0
+        },
+        {
+          'tag': '→',
+          'count': 0
         }
       ]
+    },
+    searchLineData: {
+      columns: ['date', 'count'],
+      rows: []
     }
   }),
   beforeMount: function() {
@@ -136,7 +146,7 @@ export default {
     },
     getCommentData: function () {
       let self = this
-      self.chartData.rows.forEach((o) => {
+      self.upDownPieData.rows.forEach((o) => {
         axios.get(`${self.api}/get/count/tag/${o.tag}`).then(res => {
           o.count = res.data
         })
@@ -168,8 +178,6 @@ export default {
       let self = this
       let startindex = (self.page - 1) * self.max
       let endindex = startindex + self.max - 1
-      self.chartData.rows[0].count = 0
-      self.chartData.rows[1].count = 0
       while (self.total[endindex] == undefined) {
         endindex--
       }
@@ -206,12 +214,11 @@ export default {
           return
         }
       }
-      let url = ""
       if (self.search == '') {
-        url = `${self.api}/search/${s}/${e}`
-      } else {
-        url = `${self.api}/search/${self.search}/${s}/${e}`
+        self.cleanFilter()
+        return
       }
+      let url = `${self.api}/search/${self.search}/${s}/${e}`
       axios.get(url).then(res => {
         if (res.data.length == 0) {
           self.load()
@@ -219,7 +226,16 @@ export default {
         }
         self.total = []
         res.data.forEach(o => {
-          self.total.push(o)
+          let date = new Date(o.timestamp)
+          o.timestamp = (date.getMonth()+1) + "/" + date.getDate()
+          self.total.push(o.article)
+        })
+        let dateCount = _.countBy(res.data, 'timestamp')
+        Object.keys(dateCount).forEach(name => {
+          self.searchLineData.rows.push({
+            'date': name,
+            'count': dateCount[name]
+          })
         })
         self.page = 1
         self.show = []
