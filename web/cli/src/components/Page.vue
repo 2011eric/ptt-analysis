@@ -37,7 +37,7 @@
         <p class="subtitle-1">資料數: {{total.length}}</p>
         <ve-pie :data="upDownPieData" :colors="upDownPieData.colors"></ve-pie>
         <br>
-        <ve-line :data="searchLineData" :v-if="searchLineData.rows.length!=0"></ve-line>
+        <ve-line :data="searchLineData" v-if="searchLineData.rows.length!=0"></ve-line>
       </v-card>
     </v-col>
 
@@ -227,21 +227,19 @@ export default {
         self.total = []
         res.data.forEach(o => {
           let date = new Date(o.timestamp)
-          o["date"] = (date.getMonth()+1) + "/" + date.getDate()
-          o.timestamp = date.getTime()
+          o.timestamp = (date.getMonth()+1) + "/" + date.getDate()
           self.total.push(o.article)
         })
         let dateCount = _.countBy(res.data, 'timestamp')
         let data = []
         Object.keys(dateCount).forEach(name => {
-          window.console.log((new Date("2019 "+name).getTime()))
           data.push({
             'date': name,
             'count': dateCount[name]
           })
         })
         self.searchLineData.rows = []
-        self.searchLineDate.rows = _.sortBy(data, [(o) => o.order])
+        self.searchLineData.rows = _.sortBy(data, [(o) => new Date(o.order).getTime()])
         //_.reverse(self.searchLineData.rows)
         self.page = 1
         self.show = []
