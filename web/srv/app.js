@@ -29,7 +29,7 @@ app.get('/api/get/comments/:n', function (req, res) {
   })
 })
 
-app.get('/api/search/:text/:s/:e', function (req, res) {
+app.get('/api/search/comments/:text/:s/:e', function (req, res) {
   let text = req.params.text
   let result = []
   let op = ""
@@ -38,7 +38,35 @@ app.get('/api/search/:text/:s/:e', function (req, res) {
   if (e != -1 && s != -1) {
     op = `AND timestamp < ${e} AND timestamp > ${s}`
   }
-  db.all(`SELECT article, timestamp FROM comments WHERE text LIKE "%${text}%" ${op} group by article;`, (err, data) => {
+  db.all(`SELECT article AS id, timestamp, count(id) FROM comments WHERE text LIKE "%${text}%" ${op} group by id;`, (err, data) => {
+    res.send(JSON.stringify(data))
+  })
+})
+
+app.get('/api/search/user/:text/:s/:e', function (req, res) {
+  let text = req.params.text
+  let result = []
+  let op = ""
+  let s = req.params.s
+  let e = req.params.e
+  if (e != -1 && s != -1) {
+    op = `AND timestamp < ${e} AND timestamp > ${s}`
+  }
+  db.all(`SELECT article AS id, timestamp, count(id) FROM comments WHERE user LIKE "%${text}%" ${op} group by id;`, (err, data) => {
+    res.send(JSON.stringify(data))
+  })
+})
+
+app.get('/api/search/posts/:text/:s/:e', function (req, res) {
+  let text = req.params.text
+  let result = []
+  let op = ""
+  let s = req.params.s
+  let e = req.params.e
+  if (e != -1 && s != -1) {
+    op = `AND timestamp < ${e} AND timestamp > ${s}`
+  }
+  db.all(`SELECT id, timestamp, count(id) FROM post WHERE (content LIKE "%${text}%" OR title LIKE "%${text}%") ${op};`, (err, data) => {
     res.send(JSON.stringify(data))
   })
 })

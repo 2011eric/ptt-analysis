@@ -5,31 +5,33 @@
     <v-col xs="12" md="4" class="px-5">
       <v-card class="pa-5 my-5 text-left">
         <p class="title">過濾條件</p>
-        <v-text-field v-model="search"></v-text-field>
-        <div class="d-inline-flex flex-column ma-3">
-          <p class="text-left">日期</p>
-          <v-menu v-model="smenu" :close-on-content-click="false" :nudge-right="80" transition="scale-transition" offset-y>
-            <template v-slot:activator="{ on }">
-              <v-text-field v-model="sdate" label="開始日期" prepend-icon="mdi-calendar-clock" readonly v-on="on"></v-text-field>
-            </template>
-            <v-date-picker v-model="sdate" @input="smenu = false"></v-date-picker>
-          </v-menu>
-          <v-menu v-model="emenu" :close-on-content-click="false" :nudge-right="80" transition="scale-transition" offset-y>
-            <template v-slot:activator="{ on }">
-              <v-text-field v-model="edate" label="結束日期" prepend-icon="mdi-calendar-clock" readonly v-on="on"></v-text-field>
-            </template>
-            <v-date-picker v-model="edate" @input="emenu = false"></v-date-picker>
-          </v-menu>
-        </div>
-        <div class="d-inline-flex flex-column ma-3">
-        </div>
+        <v-text-field v-model="searchText"></v-text-field>
+        <p class="text-left">選項</p>
+        <v-radio-group v-model="searchOpinion" row class="pb-3">
+          <v-radio label="留言" value="comments"></v-radio>
+          <v-radio label="使用者" value="user"></v-radio>
+          <v-radio label="文章" value="posts"></v-radio>
+        </v-radio-group>
+        <p class="text-left">日期</p>
+        <v-menu v-model="smenu" :close-on-content-click="false" :nudge-right="80" transition="scale-transition" offset-y>
+          <template v-slot:activator="{ on }">
+            <v-text-field v-model="sdate" label="開始日期" prepend-icon="mdi-calendar-clock" readonly v-on="on"></v-text-field>
+          </template>
+          <v-date-picker v-model="sdate" @input="smenu = false"></v-date-picker>
+        </v-menu>
+        <v-menu v-model="emenu" :close-on-content-click="false" :nudge-right="80" transition="scale-transition" offset-y>
+          <template v-slot:activator="{ on }">
+            <v-text-field v-model="edate" label="結束日期" prepend-icon="mdi-calendar-clock" readonly v-on="on"></v-text-field>
+          </template>
+          <v-date-picker v-model="edate" @input="emenu = false"></v-date-picker>
+        </v-menu>
         <br>
         <v-divider></v-divider>
         <br>
         <div class="d-flex flex-row">
           <v-spacer></v-spacer>
           <v-btn @click="cleanFilter" width="80px" class="mx-5">清除條件</v-btn>
-          <v-btn @click="searchPost" color="primary" width="80px">搜尋</v-btn>
+          <v-btn @click="search" color="primary" width="80px">搜尋</v-btn>
         </div>
       </v-card>
       <v-card class="pa-5 my-5 text-left">
@@ -38,7 +40,7 @@
         <ve-pie :data="upDownPieData" :colors="upDownPieData.colors"></ve-pie>
         <br>
         <div v-if="searchLineData.rows.length!=0">
-          <p class="subtitle-1">關鍵字： {{search}}</p>
+          <p class="subtitle-1">關鍵字： {{searchText}}</p>
           <ve-line :data="searchLineData"></ve-line>
         </div>
       </v-card>
@@ -63,7 +65,7 @@
           </v-card-actions>
           <div v-if="item.showComment">
             <div v-for="comment in item.comments" :key="comment.id">
-              <v-card-subtitle class="py-0">{{ comment.user }} ({{ comment.ip }})</v-card-subtitle>
+              <v-card-subtitle class="py-0"><span v-html="comment.user"></span> ({{ comment.ip }})</v-card-subtitle>
               <v-card-text class="text--primary"><span :class="comment.color+'--text'">{{ comment.tag }}</span> <span v-html="comment.text"></span></v-card-text>
             </div>
           </div>
@@ -87,7 +89,7 @@ import * as axios from 'axios'
 export default {
   name: 'Page',
   data: () => ({
-    search: '',
+    searchText: '',
     show: [],
     data: [],
     page: 1,
@@ -101,8 +103,9 @@ export default {
     emenu: false,
     menu: false,
     showComment: false,
+    searchOpinion: "comments",
     upDownPieData: {
-      colors: ['#C5E1A5','#F48FB1','#03A9F4'],
+      colors: ['#C5E1A5', '#F48FB1', '#03A9F4'],
       columns: ['tag', 'count'],
       rows: [{
           'tag': '推',
@@ -147,7 +150,7 @@ export default {
         })
       this.getCommentData()
     },
-    getCommentData: function () {
+    getCommentData: function() {
       let self = this
       self.upDownPieData.rows.forEach((o) => {
         axios.get(`${self.api}/get/count/tag/${o.tag}`).then(res => {
@@ -168,7 +171,8 @@ export default {
               } else if (c.tag == "噓") {
                 c['color'] = "text--darken-2 red"
               }
-              c.text = c.text.replace(self.search, `<span class="light-green lighten-2">${self.search}</span>`)
+              c.text = c.text.replace(self.searchText, `<span class="light-green lighten-2">${self.searchText}</span>`)
+              c.user = c.user.replace(self.searchText, `<span class="light-green lighten-2">${self.searchText}</span>`)
             })
           }
         })
@@ -205,63 +209,91 @@ export default {
         }
       })
     },
-    searchPost: function() {
+    search: function() {
+      let self = this
+      self.searchLineData.rows = []
+      switch (self.searchOpinion) {
+        case "user":
+          self.showComment = true
+          self.searchMethods("user")
+          break
+        case "comments":
+          self.showComment = true
+          self.searchMethods("comments")
+          break
+        case "posts":
+          self.searchMethods("posts")
+          break
+        default:
+          break
+      }
+    },
+    searchMethods: function(methods) {
       let self = this
       let s = -1
       let e = -1
       if (self.sdate != null && self.edate != null) {
         s = new Date(self.sdate).getTime()
         e = new Date(self.edate).getTime()
-        window.console.log(s, e)
         if (new Date(e).getTime() < new Date(s).getTime()) {
           return
         }
       }
-      if (self.search == '') {
+      if (self.searchText == '') {
         self.cleanFilter()
         return
       }
-      let url = `${self.api}/search/${self.search}/${s}/${e}`
-      axios.get(url).then(res => {
+      axios.get(`${self.api}/search/${methods}/${self.searchText}/${s}/${e}`).then(res => {
         if (res.data.length == 0) {
           self.load()
           return
         }
         self.total = []
+        let dateCount = {}
         res.data.forEach(o => {
           let date = new Date(o.timestamp)
-          o.timestamp = (date.getMonth()+1) + "/" + date.getDate()
-          self.total.push(o.article)
+          o.timestamp = `${date.getFullYear()} ${date.getMonth()+1}/${date.getDate()}`
+          if (dateCount[o.timestamp] == undefined) {
+            dateCount[o.timestamp] += parseInt(o["count(id)"])
+          } else {
+            dateCount[o.timestamp] = parseInt(o["count(id)"])
+          }
+          self.total.push(o.id)
         })
-        let dateCount = _.countBy(res.data, 'timestamp')
         let data = []
         Object.keys(dateCount).forEach(name => {
-          data.push({
-            'date': name,
-            'count': dateCount[name]
-          })
+          if (!isNaN(dateCount[name])) {
+            let tmp = new Date(name)
+            let month = (tmp.getMonth() + 1)
+            let date = tmp.getDate()
+            data.push({
+              'date': `${month}/${date}`,
+              'timestamp': name,
+              'count': dateCount[name]
+            })
+          }
         })
-        self.searchLineData.rows = []
         self.searchLineData.rows = _.sortBy(data, [(o) => {
-          let tmp = new Date("2019 " + o.date)
-          let month = (tmp.getMonth()+1)
+          let tmp = new Date(o.timestamp)
+          let month = (tmp.getMonth() + 1)
           let date = tmp.getDate()
+          let year = tmp.getFullYear()
           if (month < 10) month = `0${month}`
           if (date < 10) date = `0${date}`
-          return parseInt(`${month}${date}`)
+          return parseInt(`${year}${month}${date}`)
         }])
-        //_.reverse(self.searchLineData.rows)
         self.page = 1
         self.show = []
-        self.showComment = true
         self.render()
       })
     },
     cleanFilter: function() {
-      this.sdate = null
-      this.edate = null
-      this.search = ""
-      this.load()
+      let self = this
+      self.sdate = null
+      self.edate = null
+      self.searchText = ""
+      self.load()
+      self.searchLineData.rows = []
     }
   }
 }
