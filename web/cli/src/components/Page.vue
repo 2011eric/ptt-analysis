@@ -171,8 +171,8 @@ export default {
               } else if (c.tag == "噓") {
                 c['color'] = "text--darken-2 red"
               }
-              c.text = c.text.replace(self.searchText, `<span class="light-green lighten-2">${self.searchText}</span>`)
-              c.user = c.user.replace(self.searchText, `<span class="light-green lighten-2">${self.searchText}</span>`)
+              c.text = c.text.replace(self.searchText.toLowerCase(), `<span class="light-green lighten-2">${self.searchText}</span>`)
+              c.user = c.user.replace(self.searchText.toLowerCase(), `<span class="light-green lighten-2">${self.searchText}</span>`)
             })
           }
         })
