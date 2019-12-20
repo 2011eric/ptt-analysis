@@ -38,7 +38,7 @@ app.get('/api/search/comments/:text/:s/:e', function (req, res) {
   if (e != -1 && s != -1) {
     op = `AND timestamp < ${e} AND timestamp > ${s}`
   }
-  db.all(`SELECT article AS id, timestamp, count(id) FROM comments WHERE text LIKE "%${text}%" ${op} group by id;`, (err, data) => {
+  db.all(`SELECT article, timestamp, count(id) FROM comments WHERE text LIKE "%${text}%" ${op};`, (err, data) => {
     res.send(JSON.stringify(data))
   })
 })
@@ -52,7 +52,7 @@ app.get('/api/search/user/:text/:s/:e', function (req, res) {
   if (e != -1 && s != -1) {
     op = `AND timestamp < ${e} AND timestamp > ${s}`
   }
-  db.all(`SELECT article AS id, timestamp, count(id) FROM comments WHERE user LIKE "%${text}%" ${op} group by id;`, (err, data) => {
+  db.all(`SELECT article, timestamp, count(id) FROM comments WHERE user LIKE "%${text}%" ${op};`, (err, data) => {
     res.send(JSON.stringify(data))
   })
 })
@@ -66,7 +66,7 @@ app.get('/api/search/posts/:text/:s/:e', function (req, res) {
   if (e != -1 && s != -1) {
     op = `AND timestamp < ${e} AND timestamp > ${s}`
   }
-  db.all(`SELECT id, timestamp, count(id) FROM post WHERE (content LIKE "%${text}%" OR title LIKE "%${text}%") ${op};`, (err, data) => {
+  db.all(`SELECT id, timestamp FROM post WHERE (content LIKE "%${text}%" OR title LIKE "%${text}%") ${op};`, (err, data) => {
     res.send(JSON.stringify(data))
   })
 })
