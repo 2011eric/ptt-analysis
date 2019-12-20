@@ -251,14 +251,16 @@ export default {
         self.total = []
         let dateCount = {}
         res.data.forEach(o => {
-          let date = new Date(o.timestamp)
-          o.timestamp = `${date.getFullYear()} ${date.getMonth()+1}/${date.getDate()}`
-          if (dateCount[o.timestamp] == undefined) {
-            dateCount[o.timestamp] += parseInt(o["count(id)"])
-          } else {
-            dateCount[o.timestamp] = parseInt(o["count(id)"])
+          if (o.id != null) {
+            let date = new Date(o.timestamp)
+            o.timestamp = `${date.getFullYear()} ${date.getMonth()+1}/${date.getDate()}`
+            if (dateCount[o.timestamp] == undefined) {
+              dateCount[o.timestamp] += parseInt(o["count(id)"])
+            } else {
+              dateCount[o.timestamp] = parseInt(o["count(id)"])
+            }
+            self.total.push(o.id)
           }
-          self.total.push(o.id)
         })
         let data = []
         Object.keys(dateCount).forEach(name => {
