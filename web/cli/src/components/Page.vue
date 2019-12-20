@@ -171,8 +171,8 @@ export default {
               } else if (c.tag == "噓") {
                 c['color'] = "text--darken-2 red"
               }
-              c.text = c.text.replace(self.searchText.toLowerCase(), `<span class="light-green lighten-2">${self.searchText}</span>`)
-              c.user = c.user.replace(self.searchText.toLowerCase(), `<span class="light-green lighten-2">${self.searchText}</span>`)
+              c.text = c.text.replace(new RegExp(self.searchText, "ig"), `<span class="light-green lighten-2">${self.searchText}</span>`)
+              c.user = c.user.replace(new RegExp(self.searchText, "ig"), `<span class="light-green lighten-2">${self.searchText}</span>`)
             })
           }
         })
@@ -211,6 +211,7 @@ export default {
     },
     search: function() {
       let self = this
+      self.show = []
       self.searchLineData.rows = []
       switch (self.searchOpinion) {
         case "user":
@@ -222,7 +223,7 @@ export default {
           self.searchMethods("comments")
           break
         case "posts":
-          self.searchPosts()
+          self.searchMethods("posts")
           break
         default:
           break
@@ -253,86 +254,28 @@ export default {
         res.data.forEach(o => {
           if (o.article != null) {
             let date = new Date(o.timestamp)
-            o.timestamp = `${date.getFullYear()} ${date.getMonth()+1}/${date.getDate()}`
-            if (dateCount[o.timestamp] == undefined) {
-              dateCount[o.timestamp] += parseInt(o["count(id)"])
+            o.timestamp = `${date.getFullYear()}/${date.getMonth()+1}/${date.getDate()}`
+            if (dateCount[o.timestamp] != undefined) {
+              dateCount[o.timestamp] += 1
             } else {
-              dateCount[o.timestamp] = parseInt(o["count(id)"])
-            }
-            self.total.push(o.article)
-          }
-        })
-        let data = []
-        Object.keys(dateCount).forEach(name => {
-          if (!isNaN(dateCount[name])) {
-            let tmp = new Date(name)
-            let month = (tmp.getMonth() + 1)
-            let date = tmp.getDate()
-            data.push({
-              'date': `${month}/${date}`,
-              'timestamp': name,
-              'count': dateCount[name]
-            })
-          }
-        })
-        self.searchLineData.rows = _.sortBy(data, [(o) => {
-          let tmp = new Date(o.timestamp)
-          let month = (tmp.getMonth() + 1)
-          let date = tmp.getDate()
-          let year = tmp.getFullYear()
-          if (month < 10) month = `0${month}`
-          if (date < 10) date = `0${date}`
-          return parseInt(`${year}${month}${date}`)
-        }])
-        self.page = 1
-        self.show = []
-        self.render()
-      })
-    },
-    searchPosts: function() {
-      let self = this
-      let s = -1
-      let e = -1
-      if (self.sdate != null && self.edate != null) {
-        s = new Date(self.sdate).getTime()
-        e = new Date(self.edate).getTime()
-        if (new Date(e).getTime() < new Date(s).getTime()) {
-          return
-        }
-      }
-      if (self.searchText == '') {
-        self.cleanFilter()
-        return
-      }
-      axios.get(`${self.api}/search/posts/${self.searchText}/${s}/${e}`).then(res => {
-        if (res.data.length == 0) {
-          self.load()
-          return
-        }
-        self.total = []
-        let dateCount = {}
-        res.data.forEach(o => {
-          if (o.id != null) {
-            let date = new Date(o.timestamp)
-            o.timestamp = `${date.getFullYear()} ${date.getMonth()+1}/${date.getDate()}`
-            if (dateCount[o.timestamp] == undefined) {
               dateCount[o.timestamp] = 1
-            } else {
-              dateCount[o.timestamp]++
             }
-            self.total.push(o.id)
+            if (self.total.indexOf(o.article) == -1) {
+              self.total.push(o.article)
+            }
           }
         })
-        window.console.log(dateCount)
         let data = []
+        window.console.log(dateCount)
         Object.keys(dateCount).forEach(name => {
           if (!isNaN(dateCount[name])) {
             let tmp = new Date(name)
             let month = (tmp.getMonth() + 1)
             let date = tmp.getDate()
+            let year = tmp.getFullYear()
             data.push({
-              'date': `${month}/${date}`,
-              'timestamp': name,
+              'date': `${year}.${month}/${date}`,
+              'timestamp': tmp.getTime(),
               'count': dateCount[name]
             })
           }
